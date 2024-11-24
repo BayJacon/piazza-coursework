@@ -33,6 +33,23 @@ router.get('/', async (req, res) => {
     }
 });
 
+// code snippet to handle expiration of posts
+router.get('/', async (req, res) => {
+    try {
+        const now = new Date(); // Current time
+        const topic = req.query.topic;
+
+        const posts = topic
+            ? await Post.find({ topic, expirationTime: { $gte: now }, status: 'Live' })
+            : await Post.find({ expirationTime: { $gte: now }, status: 'Live' });
+
+        res.status(200).json(posts);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+
 // POST /posts/:id/comment - Add a comment to a post
 router.post('/:id/comment', async (req, res) => {
     try {
