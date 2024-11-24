@@ -1,33 +1,26 @@
 const express = require('express');
 const router = express.Router();
+const Post = require('../models/schema'); // Import the correct schema
 
-const Post = require('../models/Post');
-
-// Define the POST route once to avoid conflicts
+// POST /posts - Create a new post
 router.post('/', async (req, res) => {
     const postData = new Post({
         user: req.body.user,
         title: req.body.title,
         text: req.body.text,
-        hashtag: req.body.hashtag,
-        location: req.body.location,
-        url: req.body.url
+        topic: req.body.topic, // Use "topic" from the schema
+        expirationTime: req.body.expirationTime // Add expiration time
     });
 
-    // Try to save the new post
     try {
         const postToSave = await postData.save();
-        res.status(201).json(postToSave);  // Send a success response with status 201
+        res.status(201).json(postToSave);
     } catch (err) {
-        res.status(500).json({ message: err.message });  // Send a failure response with status 500
+        res.status(500).json({ message: err.message });
     }
 });
 
-router.get('/, async(req,res) =>')
-
-module.exports = router;
-
-
+// GET /posts - Browse posts (optional filtering by topic)
 router.get('/', async (req, res) => {
     try {
         const topic = req.query.topic;
@@ -40,6 +33,7 @@ router.get('/', async (req, res) => {
     }
 });
 
+// POST /posts/:id/comment - Add a comment to a post
 router.post('/:id/comment', async (req, res) => {
     try {
         const post = await Post.findById(req.params.id);
@@ -58,3 +52,5 @@ router.post('/:id/comment', async (req, res) => {
         res.status(500).json({ message: err.message });
     }
 });
+
+module.exports = router;
