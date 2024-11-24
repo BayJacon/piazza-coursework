@@ -20,7 +20,7 @@ router.post('/', async (req, res) => {
     }
 });
 
-// GET /posts - Browse posts (optional filtering by topic)
+// GET /posts - Browse posts
 router.get('/', async (req, res) => {
     try {
         const topic = req.query.topic;
