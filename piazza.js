@@ -1,3 +1,33 @@
+const express = require('express');
+const router = express.Router();
+
+const Post = require('../models/Post');
+
+// Define the POST route once to avoid conflicts
+router.post('/', async (req, res) => {
+    const postData = new Post({
+        user: req.body.user,
+        title: req.body.title,
+        text: req.body.text,
+        hashtag: req.body.hashtag,
+        location: req.body.location,
+        url: req.body.url
+    });
+
+    // Try to save the new post
+    try {
+        const postToSave = await postData.save();
+        res.status(201).json(postToSave);  // Send a success response with status 201
+    } catch (err) {
+        res.status(500).json({ message: err.message });  // Send a failure response with status 500
+    }
+});
+
+router.get('/, async(req,res) =>')
+
+module.exports = router;
+
+
 router.get('/', async (req, res) => {
     try {
         const topic = req.query.topic;
