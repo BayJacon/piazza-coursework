@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const Post = require('../models/schema'); // Ensure this points to your updated schema file
+const Post = require('../models/schema');
 
 // POST /posts - Create a new post
 router.post('/', async (req, res) => {
