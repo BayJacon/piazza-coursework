@@ -20,20 +20,16 @@ router.post('/', async (req, res) => {
     }
 });
 
-// GET /posts - Fetch posts (optionally filter by topic)
+// GET /posts - Fetch posts
 router.get('/', async (req, res) => {
     try {
-        const topic = req.query.topic; // Check for a topic filter
-        const now = new Date(); // Current time to filter expired posts
-        const posts = topic
-            ? await Post.find({ topic, expirationTime: { $gte: now }, status: 'Live' })
-            : await Post.find({ expirationTime: { $gte: now }, status: 'Live' });
-
+        const posts = await Post.find({ status: 'Live', expirationTime: { $gte: now } });
         res.status(200).json(posts);
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
 });
+
 
 // POST /posts/:id/comment - Add a comment to a post
 router.post('/:id/comment', async (req, res) => {
