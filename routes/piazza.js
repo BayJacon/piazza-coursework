@@ -23,7 +23,13 @@ router.post('/', async (req, res) => {
 // GET /posts - Fetch posts
 router.get('/', async (req, res) => {
     try {
-        const posts = await Post.find({ status: 'Live', expirationTime: { $gte: now } });
+        const topic = req.query.topic;
+        const now = new Date(); // Define the current date and time
+
+        const posts = topic
+            ? await Post.find({ topic, expirationTime: { $gte: now }, status: 'Live' })
+            : await Post.find({ expirationTime: { $gte: now }, status: 'Live' });
+
         res.status(200).json(posts);
     } catch (err) {
         res.status(500).json({ message: err.message });
