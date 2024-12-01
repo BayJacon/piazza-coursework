@@ -8,8 +8,8 @@ router.post('/', async (req, res) => {
         user: req.body.user,
         title: req.body.title,
         text: req.body.text,
-        topic: req.body.topic, // Match the updated schema
-        expirationTime: req.body.expirationTime // Include expiration time
+        topic: req.body.topic,
+        expirationTime: req.body.expirationTime
     });
 
     try {
