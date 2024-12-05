@@ -9,7 +9,8 @@ router.post('/', async (req, res) => {
         title: req.body.title,
         text: req.body.text,
         topic: req.body.topic,
-        expirationTime: req.body.expirationTime
+        expirationTime: req.body.expirationTime,
+        status: 'Live' // Default status is "Live"
     });
 
     try {
@@ -20,15 +21,15 @@ router.post('/', async (req, res) => {
     }
 });
 
-// GET /posts - Fetch posts
+// GET /posts - Fetch all posts
 router.get('/', async (req, res) => {
     try {
         const topic = req.query.topic;
-        const now = new Date(); // Define the current date and time
 
+        // Fetch posts, optionally filtering by topic
         const posts = topic
-            ? await Post.find({ topic, expirationTime: { $gte: now }, status: 'Live' })
-            : await Post.find({ expirationTime: { $gte: now }, status: 'Live' });
+            ? await Post.find({ topic })
+            : await Post.find();
 
         res.status(200).json(posts);
     } catch (err) {
@@ -36,12 +37,16 @@ router.get('/', async (req, res) => {
     }
 });
 
-
 // POST /posts/:id/comment - Add a comment to a post
 router.post('/:id/comment', async (req, res) => {
     try {
         const post = await Post.findById(req.params.id);
         if (!post) return res.status(404).send('Post not found');
+
+        // Prevent interactions with expired posts
+        if (post.status === 'Expired') {
+            return res.status(403).json({ message: 'Cannot add a comment to an expired post.' });
+        }
 
         const comment = {
             user: req.body.user,
@@ -63,6 +68,11 @@ router.post('/:id/like', async (req, res) => {
         const post = await Post.findById(req.params.id);
         if (!post) return res.status(404).send('Post not found');
 
+        // Prevent interactions with expired posts
+        if (post.status === 'Expired') {
+            return res.status(403).json({ message: 'Cannot like an expired post.' });
+        }
+
         post.likes++;
         await post.save();
         res.status(200).json({ message: 'Post liked!', likes: post.likes });
@@ -76,6 +86,11 @@ router.post('/:id/dislike', async (req, res) => {
     try {
         const post = await Post.findById(req.params.id);
         if (!post) return res.status(404).send('Post not found');
+
+        // Prevent interactions with expired posts
+        if (post.status === 'Expired') {
+            return res.status(403).json({ message: 'Cannot dislike an expired post.' });
+        }
 
         post.dislikes++;
         await post.save();
