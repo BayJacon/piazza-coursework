@@ -5,10 +5,10 @@ const mongoose = require('mongoose');
 require('dotenv/config');
 
 const bodyParser = require('body-parser');
-const piazzaRoute = require('./routes/piazza');
+const postsRoute = require('./routes/posts');
 
 app.use(bodyParser.json());
-app.use('/posts', piazzaRoute);
+app.use('/posts', postsRoute);
 
 app.get('/', (req, res) => {
     res.send('Homepage');
