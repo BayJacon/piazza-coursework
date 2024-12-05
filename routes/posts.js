@@ -4,16 +4,29 @@ const Post = require('../models/schema');
 
 // POST /posts - Create a new post
 router.post('/', async (req, res) => {
-    const postData = new Post({
-        user: req.body.user,
-        title: req.body.title,
-        text: req.body.text,
-        topic: req.body.topic,
-        expirationTime: req.body.expirationTime,
-        status: 'Live' // Default status is "Live"
-    });
+    const { user, title, text, topic, duration } = req.body;
 
     try {
+        // Parse "HH:MM" format into hours and minutes
+        const [hours, minutes] = duration.split(':').map(Number);
+        if (isNaN(hours) || isNaN(minutes)) {
+            return res.status(400).json({ message: 'Invalid duration format. Use "HH:MM".' });
+        }
+
+        // Calculate the expiration time
+        const now = new Date();
+        const expirationTime = new Date(now.getTime() + hours * 60 * 60 * 1000 + minutes * 60 * 1000);
+
+        // Create a new post
+        const postData = new Post({
+            user,
+            title,
+            text,
+            topic,
+            expirationTime,
+            status: 'Live' // Default status
+        });
+
         const postToSave = await postData.save();
         res.status(201).json(postToSave);
     } catch (err) {
