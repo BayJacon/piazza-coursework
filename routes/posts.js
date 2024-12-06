@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Post = require('../models/schema');
 
-// POST /posts - Create a new post
+// POST /posts - CREATE a new post
 router.post('/', async (req, res) => {
     const { user, title, text, topic, duration } = req.body;
 
@@ -16,8 +16,8 @@ router.post('/', async (req, res) => {
         // Calculate the expiration time
         const now = new Date();
         const expirationTime = new Date(now.getTime() + hours * 60 * 60 * 1000 + minutes * 60 * 1000);
-
-        // Create a new post
+        
+        // new post data
         const postData = new Post({
             user,
             title,
@@ -34,7 +34,7 @@ router.post('/', async (req, res) => {
     }
 });
 
-// GET /posts - Fetch all posts
+// GET /posts - READ all posts
 router.get('/', async (req, res) => {
     try {
         const topic = req.query.topic;
@@ -50,7 +50,7 @@ router.get('/', async (req, res) => {
     }
 });
 
-// POST /posts/:id/comment - Add a comment to a post
+// POST /posts/:id/comment - Add a comment to a post (UPDATE)
 router.post('/:id/comment', async (req, res) => {
     try {
         const post = await Post.findById(req.params.id);
