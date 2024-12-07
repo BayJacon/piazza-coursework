@@ -1,4 +1,4 @@
-const Joi = require('joi'); // Fixed capitalization of Joi
+const Joi = require('joi'); 
 
 const registerValidation = (data) => {
     const schemaValidation = Joi.object({
@@ -27,8 +27,16 @@ const postValidation = (data) => {
     return schema.validate(data);
 };
 
+const commentValidation = (data) => {
+    const schema = Joi.object({
+        text: Joi.string().min(1).max(500).required() // Adjust min/max length as needed
+    });
+    return schema.validate(data);
+};
+
 module.exports = {
     registerValidation,
     loginValidation,
-    postValidation
+    postValidation,
+    commentValidation // Export the new validation function
 };

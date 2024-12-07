@@ -40,16 +40,27 @@ router.post('/', auth, async (req, res) => {
     }
 });
 
-// GET /posts - READ all posts
+// GET /posts - READ all posts, with optional filtering by topic and status
 router.get('/', auth, async (req, res) => {
     try {
-        const topic = req.query.topic;
+        const { topic, status } = req.query; // Extract query parameters
+        const filter = {};
 
-        // Fetch posts, optionally filtering by topic
-        const posts = topic
-            ? await Post.find({ topic })
-            : await Post.find();
+        // Filter by topic if provided
+        if (topic) {
+            filter.topic = topic;
+        }
 
+        // Filter by status if provided
+        if (status) {
+            if (status !== 'Live' && status !== 'Expired') {
+                return res.status(400).json({ message: 'Invalid status filter. Use "Live" or "Expired".' });
+            }
+            filter.status = status;
+        }
+
+        // Fetch posts based on filters
+        const posts = await Post.find(filter);
         res.status(200).json(posts);
     } catch (err) {
         res.status(500).json({ message: err.message });
