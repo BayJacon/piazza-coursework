@@ -1,21 +1,20 @@
 const express = require('express');
 const app = express();
 const cron = require('node-cron');
-const Post = require('./models/Post');
-const auth = require('./verifyToken');
 const mongoose = require('mongoose');
 require('dotenv/config');
 
 const bodyParser = require('body-parser');
 const postsRoute = require('./routes/posts');
 const authRoute = require('./routes/auth');
+const Post = require('./models/Post');
 
-// middleware
+// Middleware
 app.use(bodyParser.json());
-app.use('/posts', auth, postsRoute);
-app.use('/api/user', authRoute);
-app.use('/posts', auth, postsRoute);
+app.use('/api/user', authRoute); // Authentication routes
+app.use('/posts', postsRoute); // Posts routes (auth middleware applied selectively in `posts.js`)
 
+// Homepage route
 app.get('/', (req, res) => {
     res.send('Homepage');
 });
@@ -39,10 +38,16 @@ cron.schedule('* * * * *', async () => {
     }
 });
 
-mongoose.connect(process.env.DB_CONNECTOR).then(() => {
-    console.log('Your MongoDB connector is on...');
-});
+// Connect to the database
+mongoose.connect(process.env.DB_CONNECTOR)
+    .then(() => {
+        console.log('Your MongoDB connector is on...');
+    })
+    .catch((err) => {
+        console.error('Error connecting to MongoDB:', err.message);
+    });
 
+// Start the server
 app.listen(3000, () => {
     console.log('Server is up and running...');
 });

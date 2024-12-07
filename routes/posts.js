@@ -6,7 +6,6 @@ const { postValidation } = require('../validations/validation');
 
 // POST /posts - CREATE a new post
 router.post('/', auth, async (req, res) => {
-    // Validate input
     const { error } = postValidation(req.body);
     if (error) return res.status(400).json({ message: error.details[0].message });
 
@@ -16,7 +15,7 @@ router.post('/', auth, async (req, res) => {
         // Validate and calculate the expiration time
         const minutes = Number(duration);
         if (isNaN(minutes) || minutes < 1 || minutes > 999) {
-            return res.status(400).json({ message: 'Duration must be a number between 1 and 999.' });
+            return res.status(400).json({ message: 'Duration must be between 1 and 999 mins.' });
         }
 
         const now = new Date();
