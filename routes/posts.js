@@ -63,7 +63,7 @@ router.post('/:id/comment', auth, async (req, res) => {
 
         // Prevent interactions with expired posts
         if (post.status === 'Expired') {
-            return res.status(403).json({ message: 'Cannot add a comment to an expired post.' });
+            return res.status(403).json({ message: 'Sorry, post is expired.' });
         }
 
         const comment = {
@@ -88,7 +88,7 @@ router.post('/:id/like', auth, async (req, res) => {
 
         // Prevent interactions with expired posts
         if (post.status === 'Expired') {
-            return res.status(403).json({ message: 'Cannot like an expired post.' });
+            return res.status(403).json({ message: 'Sorry, post is expired.' });
         }
 
         post.likes++;
@@ -107,7 +107,7 @@ router.post('/:id/dislike', auth, async (req, res) => {
 
         // Prevent interactions with expired posts
         if (post.status === 'Expired') {
-            return res.status(403).json({ message: 'Cannot dislike an expired post.' });
+            return res.status(403).json({ message: 'Sorry, post is expired.' });
         }
 
         post.dislikes++;

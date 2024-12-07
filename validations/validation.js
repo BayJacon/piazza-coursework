@@ -22,8 +22,8 @@ const postValidation = (data) => {
     const schema = joi.object({
         title: joi.string().required().min(3).max(256),
         text: joi.string().required().min(3).max(1024),
-        topic: joi.string().required().min(3).max(256),
-        expirationTime: joi.date().required(),
+        topic: joi.string().valid('Politics', 'Health', 'Sport', 'Tech').required(),
+        duration: joi.number().integer().min(1).max(999).required(),
     });
     return schema.validate(data);
 };
