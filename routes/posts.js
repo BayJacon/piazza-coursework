@@ -63,18 +63,30 @@ router.post('/:id/comment', auth, async (req, res) => {
 
         // Prevent interactions with expired posts
         if (post.status === 'Expired') {
-            return res.status(403).json({ message: 'Sorry, post is expired.' });
+            return res.status(403).json({ message: 'Cannot comment on an expired post.' });
         }
 
+        const now = new Date();
+        const timeLeft = Math.max(0, post.expirationTime - now);
+        const minutesLeft = Math.floor(timeLeft / 60000);
+
+        // Add the comment
         const comment = {
-            user: req.body.user,
+            user: req.user._id, // Store user ID (or username)
             text: req.body.text,
-            date: new Date(),
+            date: now,
         };
 
         post.comments.push(comment);
+        post.totalInteractions++; // Increment total interactions
         await post.save();
-        res.status(201).json({ message: 'Comment added!', comments: post.comments });
+
+        res.status(201).json({
+            message: 'Comment added!',
+            comments: post.comments,
+            totalInteractions: post.totalInteractions,
+            timeLeft: minutesLeft > 0 ? `${minutesLeft} minutes` : 'Expired',
+        });
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
