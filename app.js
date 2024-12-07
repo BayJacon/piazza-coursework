@@ -2,14 +2,19 @@ const express = require('express');
 const app = express();
 const cron = require('node-cron');
 const Post = require('./models/schema');
+const auth = require('./verifyToken');
 const mongoose = require('mongoose');
 require('dotenv/config');
 
 const bodyParser = require('body-parser');
 const postsRoute = require('./routes/posts');
+const authRoute = require('./routes/auth');
 
+// middleware
 app.use(bodyParser.json());
 app.use('/posts', postsRoute);
+app.use('/api/user', authRoute);
+app.use('/posts', auth, postsRoute);
 
 app.get('/', (req, res) => {
     res.send('Homepage');
