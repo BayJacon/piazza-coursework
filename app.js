@@ -12,7 +12,7 @@ const authRoute = require('./routes/auth');
 
 // middleware
 app.use(bodyParser.json());
-app.use('/posts', postsRoute);
+app.use('/posts', auth, postsRoute);
 app.use('/api/user', authRoute);
 app.use('/posts', auth, postsRoute);
 
