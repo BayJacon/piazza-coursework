@@ -92,20 +92,29 @@ router.post('/:id/comment', auth, async (req, res) => {
     }
 });
 
-// POST /posts/:id/like - Like a post
 router.post('/:id/like', auth, async (req, res) => {
     try {
         const post = await Post.findById(req.params.id);
         if (!post) return res.status(404).send('Post not found');
 
-        // Prevent interactions with expired posts
         if (post.status === 'Expired') {
-            return res.status(403).json({ message: 'Sorry, post is expired.' });
+            return res.status(403).json({ message: 'Cannot like an expired post.' });
         }
 
+        const now = new Date();
+        const timeLeft = Math.max(0, post.expirationTime - now);
+        const minutesLeft = Math.floor(timeLeft / 60000);
+
         post.likes++;
+        post.totalInteractions++; // Increment total interactions
         await post.save();
-        res.status(200).json({ message: 'Post liked!', likes: post.likes });
+
+        res.status(200).json({
+            message: `User ${req.user._id} liked this post.`,
+            likes: post.likes,
+            totalInteractions: post.totalInteractions,
+            timeLeft: minutesLeft > 0 ? `${minutesLeft} minutes` : 'Expired',
+        });
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
