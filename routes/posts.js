@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const Post = require('../models/schema');
+const Post = require('../models/Post');
 const auth = require('../verifyToken');
 const { postValidation } = require('../validations/validation');
 

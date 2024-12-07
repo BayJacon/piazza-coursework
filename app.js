@@ -1,7 +1,7 @@
 const express = require('express');
 const app = express();
 const cron = require('node-cron');
-const Post = require('./models/schema');
+const Post = require('./models/Post');
 const auth = require('./verifyToken');
 const mongoose = require('mongoose');
 require('dotenv/config');
