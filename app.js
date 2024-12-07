@@ -12,14 +12,14 @@ const Post = require('./models/Post');
 // Middleware
 app.use(bodyParser.json());
 app.use('/api/user', authRoute); // Authentication routes
-app.use('/posts', postsRoute); // Posts routes (auth middleware applied selectively in `posts.js`)
+app.use('/posts', postsRoute); // Posts routes 
 
 // Homepage route
 app.get('/', (req, res) => {
     res.send('Homepage');
 });
 
-// Schedule a cron job to check for expired posts every minute
+// Check for expired posts every minute
 cron.schedule('* * * * *', async () => {
     try {
         const now = new Date();
