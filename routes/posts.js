@@ -1,30 +1,35 @@
 const express = require('express');
 const router = express.Router();
 const Post = require('../models/schema');
+const auth = require('../verifyToken');
+const { postValidation } = require('../validations/validation');
 
 // POST /posts - CREATE a new post
-router.post('/', async (req, res) => {
-    const { user, title, text, topic, duration } = req.body;
+router.post('/', auth, async (req, res) => {
+    // Validate input
+    const { error } = postValidation(req.body);
+    if (error) return res.status(400).json({ message: error.details[0].message });
+
+    const { title, text, topic, duration } = req.body;
 
     try {
-        // Parse "HH:MM" format into hours and minutes
-        const [hours, minutes] = duration.split(':').map(Number);
-        if (isNaN(hours) || isNaN(minutes)) {
-            return res.status(400).json({ message: 'Invalid duration format. Use "HH:MM".' });
+        // Validate and calculate the expiration time
+        const minutes = Number(duration);
+        if (isNaN(minutes) || minutes < 1 || minutes > 999) {
+            return res.status(400).json({ message: 'Duration must be a number between 1 and 999.' });
         }
 
-        // Calculate the expiration time
         const now = new Date();
-        const expirationTime = new Date(now.getTime() + hours * 60 * 60 * 1000 + minutes * 60 * 1000);
-        
-        // new post data
+        const expirationTime = new Date(now.getTime() + minutes * 60 * 1000);
+
+        // Create new post data
         const postData = new Post({
-            user,
+            user: req.user._id, // Associate with authenticated user
             title,
             text,
             topic,
             expirationTime,
-            status: 'Live' // Default status
+            status: 'Live', // Default status
         });
 
         const postToSave = await postData.save();
@@ -35,7 +40,7 @@ router.post('/', async (req, res) => {
 });
 
 // GET /posts - READ all posts
-router.get('/', async (req, res) => {
+router.get('/', auth, async (req, res) => {
     try {
         const topic = req.query.topic;
 
@@ -51,7 +56,7 @@ router.get('/', async (req, res) => {
 });
 
 // POST /posts/:id/comment - Add a comment to a post (UPDATE)
-router.post('/:id/comment', async (req, res) => {
+router.post('/:id/comment', auth, async (req, res) => {
     try {
         const post = await Post.findById(req.params.id);
         if (!post) return res.status(404).send('Post not found');
@@ -64,7 +69,7 @@ router.post('/:id/comment', async (req, res) => {
         const comment = {
             user: req.body.user,
             text: req.body.text,
-            date: new Date()
+            date: new Date(),
         };
 
         post.comments.push(comment);
@@ -76,7 +81,7 @@ router.post('/:id/comment', async (req, res) => {
 });
 
 // POST /posts/:id/like - Like a post
-router.post('/:id/like', async (req, res) => {
+router.post('/:id/like', auth, async (req, res) => {
     try {
         const post = await Post.findById(req.params.id);
         if (!post) return res.status(404).send('Post not found');
@@ -95,7 +100,7 @@ router.post('/:id/like', async (req, res) => {
 });
 
 // POST /posts/:id/dislike - Dislike a post
-router.post('/:id/dislike', async (req, res) => {
+router.post('/:id/dislike', auth, async (req, res) => {
     try {
         const post = await Post.findById(req.params.id);
         if (!post) return res.status(404).send('Post not found');
