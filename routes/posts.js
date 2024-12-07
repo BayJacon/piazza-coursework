@@ -2,28 +2,30 @@ const express = require('express');
 const router = express.Router();
 const Post = require('../models/Post');
 const auth = require('../verifyToken');
-const { postValidation } = require('../validations/validation');
+const { postValidation, commentValidation } = require('../validations/validation');
 
 // POST /posts - CREATE a new post
 router.post('/', auth, async (req, res) => {
-    const { error } = postValidation(req.body);
-    if (error) return res.status(400).json({ message: error.details[0].message });
-
     const { title, text, topic, duration } = req.body;
 
     try {
-        // Validate and calculate the expiration time
+        // Validate input
+        const { error } = postValidation(req.body);
+        if (error) return res.status(400).json({ message: error.details[0].message });
+
+        // Validate and calculate expiration time
         const minutes = Number(duration);
         if (isNaN(minutes) || minutes < 1 || minutes > 999) {
-            return res.status(400).json({ message: 'Duration must be between 1 and 999 mins.' });
+            return res.status(400).json({ message: 'Duration must be a number between 1 and 999.' });
         }
 
         const now = new Date();
         const expirationTime = new Date(now.getTime() + minutes * 60 * 1000);
+        const username = req.user.username; // Assuming your auth middleware attaches the username
 
         // Create new post data
         const postData = new Post({
-            user: req.user._id, // Associate with authenticated user
+            user: username, // Save username directly
             title,
             text,
             topic,
@@ -57,6 +59,10 @@ router.get('/', auth, async (req, res) => {
 // POST /posts/:id/comment - Add a comment to a post (UPDATE)
 router.post('/:id/comment', auth, async (req, res) => {
     try {
+        // Validate input
+        const { error } = commentValidation(req.body);
+        if (error) return res.status(400).json({ message: error.details[0].message });
+
         const post = await Post.findById(req.params.id);
         if (!post) return res.status(404).send('Post not found');
 
@@ -71,7 +77,7 @@ router.post('/:id/comment', auth, async (req, res) => {
 
         // Add the comment
         const comment = {
-            user: req.user._id, // Store user ID (or username)
+            user: req.user.username, // Store username instead of user ID
             text: req.body.text,
             date: now,
         };
@@ -81,7 +87,7 @@ router.post('/:id/comment', auth, async (req, res) => {
         await post.save();
 
         res.status(201).json({
-            message: 'Comment added!',
+            message: `${req.user.username} added a comment!`,
             comments: post.comments,
             totalInteractions: post.totalInteractions,
             timeLeft: minutesLeft > 0 ? `${minutesLeft} minutes` : 'Expired',
@@ -91,6 +97,7 @@ router.post('/:id/comment', auth, async (req, res) => {
     }
 });
 
+// POST /posts/:id/like - Like a post
 router.post('/:id/like', auth, async (req, res) => {
     try {
         const post = await Post.findById(req.params.id);
@@ -109,7 +116,7 @@ router.post('/:id/like', auth, async (req, res) => {
         await post.save();
 
         res.status(200).json({
-            message: `User ${req.user._id} liked this post.`,
+            message: `${req.user.username} liked this post.`,
             likes: post.likes,
             totalInteractions: post.totalInteractions,
             timeLeft: minutesLeft > 0 ? `${minutesLeft} minutes` : 'Expired',
@@ -119,6 +126,7 @@ router.post('/:id/like', auth, async (req, res) => {
     }
 });
 
+// POST /posts/:id/dislike - Dislike a post
 router.post('/:id/dislike', auth, async (req, res) => {
     try {
         const post = await Post.findById(req.params.id);
@@ -137,7 +145,7 @@ router.post('/:id/dislike', auth, async (req, res) => {
         await post.save();
 
         res.status(200).json({
-            message: `User ${req.user._id} disliked this post.`,
+            message: `${req.user.username} disliked this post.`,
             dislikes: post.dislikes,
             totalInteractions: post.totalInteractions,
             timeLeft: minutesLeft > 0 ? `${minutesLeft} minutes` : 'Expired',
