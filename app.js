@@ -48,6 +48,6 @@ mongoose.connect(process.env.DB_CONNECTOR)
     });
 
 // Start the server
-app.listen(3000, () => {
-    console.log('Server is up and running...');
+app.listen(3000, '0.0.0.0', () => {
+    console.log('Server is up and running on port 3000...');
 });
