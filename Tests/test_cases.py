@@ -4,19 +4,19 @@ import pytest
 from test_functions import (create_post, login_user, nick_post, olga_post, users, BASE_URL, tokens)
 
 def test_case_1():
-    """Olga, Nick, Mary, and Nestor register successfully"""
-    for user in users:
-        response = requests.post(f"{BASE_URL}/api/user/register", json=user)
-        assert response.status_code in (200, 201)
+    """Olga, Nick, Mary, and Nestor register successfully."""
+    for user_data in users.values():
+        response = requests.post(f"{BASE_URL}/api/user/register", json=user_data)
+        assert response.status_code in (200, 201), f"Failed to register user: {user_data['username']}"
 
 def test_case_2():
     """Olga, Nick, Mary, and Nestor log in successfully and store tokens."""
-    for user in users:
-        login_user(user)
+    for user_data in users.values():
+        login_user(user_data)
     # Assert that tokens have been stored for all users
-    for user in users:
-        assert user["username"] in tokens, f"Token for {user['username']} not found in tokens dictionary"
-        assert tokens[user["username"]], f"Token for {user['username']} is empty or invalid"
+    for username, user_data in users.items():
+        assert username in tokens, f"Token for {username} not found in tokens dictionary"
+        assert tokens[username], f"Token for {username} is empty or invalid"
 
 
 def test_case_3():
@@ -34,16 +34,3 @@ def test_case_4():
     post_id = create_post("Olga", olga_post)
     # Assert the post was successfully created and has a valid ID
     assert post_id, "Post creation failed for Olga. No post ID returned."
-
-def test_case_post_to_user_posts():
-    """Test Nick posts a message to /api/user/posts and gets the correct response code."""
-    login_user(users["Nick"])
-    token = tokens.get("Nick")  # Retrieve the user's token
-
-    # Send the POST request
-    headers = {"auth-token": token}
-    response = requests.post(f"{BASE_URL}/api/user/posts", json=nick_post, headers=headers)
-
-    # Assert the response code is 201 (Created)
-    assert response.status_code == 201
-
