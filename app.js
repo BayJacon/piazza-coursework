@@ -24,7 +24,7 @@ cron.schedule('* * * * *', async () => {
     try {
         const now = new Date();
 
-        // Update all "Live" posts with expired times to "Expired"
+        // Update live posts to expired when "now" passes "expiration time"
         const result = await Post.updateMany(
             { expirationTime: { $lt: now }, status: 'Live' },
             { $set: { status: 'Expired' } }
@@ -38,10 +38,10 @@ cron.schedule('* * * * *', async () => {
     }
 });
 
-// Connect to the database
+// Connect to database
 mongoose.connect(process.env.DB_CONNECTOR)
     .then(() => {
-        console.log('Your MongoDB connector is on...');
+        console.log('Your MongoDB is connected!');
     })
     .catch((err) => {
         console.error('Error connecting to MongoDB:', err.message);

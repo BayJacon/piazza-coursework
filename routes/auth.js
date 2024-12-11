@@ -9,23 +9,23 @@ const jsonwebtoken = require('jsonwebtoken')
 
 router.post('/register', async(req,res)=>{
 
-    // Validation 1 to check user input
+    // Validation to check user input for registration
     const {error} = registerValidation(req.body)
     if(error){
         return res.status(400).send({message:error['details'][0]['message']})
     }
 
-    // Validation 2 to check if user exists!
+    // Validation to check if user exists
     const userExists = await User.findOne({email:req.body.email})
     if(userExists){
         return res.status(400).send({message:'User already exists'})
     }
 
-    // I created a hashed represenation of my password!
+    // creates a hashed representation of password
     const salt = await bcryptjs.genSalt(5)
     const hashedPassword = await bcryptjs.hash(req.body.password,salt)
 
-    // Code to insert data
+    // insert new user into database
     const user = new User({
         username:req.body.username,
         email:req.body.email,
@@ -42,19 +42,19 @@ router.post('/register', async(req,res)=>{
 
 router.post('/login', async(req,res)=>{
 
-    // Validation 1 to check user input
+    // Validation to check user input
     const {error} = loginValidation(req.body)
     if(error){
         return res.status(400).send({message:error['details'][0]['message']})
     }
 
-    // Validation 2 to check if user exists!
+    // Validation to check if user exists!
     const user = await User.findOne({email:req.body.email})
     if(!user){
         return res.status(400).send({message:'User does not exist'})
     } 
     
-    // Validation 3 to check user password
+    // Validation to check user password matches
     const passwordValidation = await bcryptjs.compare(req.body.password,user.password)
     if(!passwordValidation){
         return res.status(400).send({message:'Password is wrong'})
